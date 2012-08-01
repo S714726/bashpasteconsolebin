@@ -1,0 +1,14 @@
+doctype html5
+html
+  head
+    - if (typeof(title) != 'undefined')
+      title slambam-direct - #{title}
+    - else
+      title slambam-direct
+    link(href='layout.css', rel='stylesheet', type='text/css')
+  body
+    - if (typeof(title) != 'undefined')
+      h1 slambam-direct - #{title}
+    - else
+      h1 slambam-direct
+    block content

@@ -1,0 +1,11 @@
+extends layout
+
+block content
+  h3 colored console output straight to your browser
+  form(action='/', method='post') Upload your own log:
+    input(type='file')
+    input(type='submit', value='Upload')
+  ol
+    each log in logs
+      li #{log.date} 
+        a(href='#{log.id}', title='#{log.id}') #{log.id}
