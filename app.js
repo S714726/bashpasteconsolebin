@@ -1,10 +1,11 @@
 var express = require('express'),
        jade = require('jade'),
       redis = require('redis'),
+         fs = require('fs'),
         app = express(),
          db = redis.createClient();
 
-app.use(app.router);
+app.use(express.bodyParser());
 app.use(express.static(__dirname + '/res'));
 app.set('views', __dirname + '/src');
 
@@ -40,17 +41,19 @@ app.get('/:n([0-9]+)', function(req, res) {
 
 
 app.post('/', function(req, res) {
-  // use req.is to check for text/plain ?
-  var data = req.body.log; // find a one-liner that does this
+  console.log(req.files.log)
   var now = new Date().getTime();
-  var processed = data;
+  fs.readFile(req.files.log.path, function (err, data) {
+    if (data) {
   // process text, escape it and replace colors with span tags, line breaks with paragraphs
-  db.zadd('logs', now, processed, function (err) {
-    res.redirect('/' + now);
-/*
-    if (err) {
-      // bomb
-    }*/
+    var processed = data;
+    db.zadd('logs', now, processed, function (err) {
+      res.redirect('/' + now);/*
+                                if (err) {
+                                // bomb
+                                }*/
+    });
+    } /* else {} yet another bomb */
   });
 });
 

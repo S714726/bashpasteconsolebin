@@ -2,7 +2,7 @@ extends layout
 
 block content
   h3 colored console output straight to your browser
-  form(action='/', method='post') Upload your own log:
+  form(action='/', method='post', enctype='multipart/form-data') Upload your own log:
     input(type='file', name='log')
     input(type='submit', value='Upload')
   ol
