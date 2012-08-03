@@ -8,34 +8,51 @@ app.use(app.router);
 app.use(express.static(__dirname + '/res'));
 app.set('views', __dirname + '/src');
 
-// Need: 404 (i.e. error) template, gist template, base index template
+// Need: 404 (i.e. error) template
 
 app.get('/', function(req, res) {
-  //db.zrange('dump', 0, -1);
-  var test_logs = [{date:'07/31/2012', id:'112308123'}, {date:'08/01/2012', id:'01'}]
-  res.render('index.jade', {logs: test_logs});
+  db.zrevrange('logs', 0, -1, 'withscores', function (err, data) {
+    if (data) {
+      var logs = []
+      for (i = 0; i < data.length; i += 2) {
+        logs[i/2] = {id: parseInt(data[i+1], 10), content: data[i]}
+      }
+      res.render('index.jade', {logs: logs});
+    } /*else {
+      // 500 error, next() ?
+      }*/
+  });
 });
 
-/*
 app.get('/:n([0-9]+)', function(req, res) {
-  var n = req.params.n
-  // TODO send to 404 if n not in db 
-  // "gist" and back button
-
-res.render('log.jade', {
-  title: 'log 123120983',
-  message: 'log 123120983',
-  content: '<p>$ command -> <span style=\"background-color: green;\">Coloring works</span></p><p>$ Use paragraphs for line breaks</p>'})
+  var n = parseInt(req.params.n, 10);
+  db.zrangebyscore('logs', n, n+1, 'withscores', 'limit', 0, 1, function (err, data) {
+    if (data) {
+      res.render('log.jade', {
+        title: 'log ' + data[1],
+        message: data[1],
+        content: data[0]});
+    } /*else {
+      // TODO send to 404 if n not in db 
+        }*/
+  });
 });
+
 
 app.post('/', function(req, res) {
-  // TODO Route for "/" POST tries to upload "gist"
   // use req.is to check for text/plain ?
+  var data = req.body.log; // find a one-liner that does this
+  var now = new Date().getTime();
+  var processed = data;
   // process text, escape it and replace colors with span tags, line breaks with paragraphs
-  // put in db
-  // afterward, redirect to new "gist" URL
+  db.zadd('logs', now, processed, function (err) {
+    res.redirect('/' + now);
+/*
+    if (err) {
+      // bomb
+    }*/
+  });
 });
-*/
 
 /* Doesn't work at all.
 app.error(function(err, req, res, next) {
