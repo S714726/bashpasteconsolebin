@@ -9,8 +9,13 @@ app.use(express.bodyParser());
 app.use(express.static(__dirname + '/res'));
 app.set('views', __dirname + '/src');
 
-// Need: 404 (i.e. error) template
+// Put in bright/bold support later
+var normalColors = {
+  '0': '000', '1': 'A00', '2': '0A0', '3': 'FF6', '4': '00A',
+  '5': 'A0A', '6': '0AA', '7': 'FFF'
+}
 
+// Need: 404 (i.e. error) template
 app.get('/', function(req, res) {
   db.zrevrange('logs', 0, -1, 'withscores', function (err, data) {
     if (data) {
@@ -39,14 +44,47 @@ app.get('/:n([0-9]+)', function(req, res) {
   });
 });
 
-
 app.post('/', function(req, res) {
-  console.log(req.files.log)
   var now = new Date().getTime();
   fs.readFile(req.files.log.path, function (err, data) {
     if (data) {
-  // process text, escape it and replace colors with span tags, line breaks with paragraphs
-    var processed = data;
+  // process text, escape it and replace colors with span tags, line breaks with paragraphsw
+      var htmlEscaped = '<p>' + data.toString()
+        .replace(new RegExp('&', 'gm'), '&amp;')
+        .replace(new RegExp('\'', 'gm'), '&#39;')
+        .replace(new RegExp('<', 'gm'), '&lt;')
+        .replace(new RegExp('>', 'gm'), '&gt;')
+        .replace(new RegExp('\"', 'gm'), '&quot;')
+        .replace(new RegExp('\\n', 'gm'), '</p><p>')
+        + '</p>';
+      var processed = '';
+      var findColors = new RegExp('\\[([0-9][0-9]?;?)*m', 'gm');
+      var sequences = [0];
+      while ((match = findColors.exec(htmlEscaped)) != null) {
+        sequences.push(match.index, findColors.lastIndex);
+      }
+      var colored = false;
+      for (var i = 0; i < sequences.length; i+=2) {
+        processed += htmlEscaped.slice(sequences[i], sequences[i+1]);
+        var colors = htmlEscaped.slice(sequences[i+1]+1,sequences[i+2]-1)
+          .split(';');
+
+        colors.forEach(function(color, ind, arr) {
+          if (color == '0' && colored) {
+            processed += '</span>'
+            colored = false;
+          } else if (color[0] == '3' && color[1] in normalColors) {
+            if (colored)
+              processed += '</span>'
+            else
+              colored = true;
+            processed += '<span style=\'color: #'
+              + normalColors[color[1]] + '\'>';
+          }
+        });
+      }
+      if (colored)
+        processed += '</span>'
     db.zadd('logs', now, processed, function (err) {
       res.redirect('/' + now);/*
                                 if (err) {
