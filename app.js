@@ -49,14 +49,12 @@ app.post('/', function(req, res) {
   fs.readFile(req.files.log.path, function (err, data) {
     if (data) {
   // process text, escape it and replace colors with span tags, line breaks with paragraphsw
-      var htmlEscaped = '<p>' + data.toString()
+      var htmlEscaped = data.toString()
         .replace(new RegExp('&', 'gm'), '&amp;')
         .replace(new RegExp('\'', 'gm'), '&#39;')
         .replace(new RegExp('<', 'gm'), '&lt;')
         .replace(new RegExp('>', 'gm'), '&gt;')
-        .replace(new RegExp('\"', 'gm'), '&quot;')
-        .replace(new RegExp('\\n', 'gm'), '</p><p>')
-        + '</p>';
+        .replace(new RegExp('\"', 'gm'), '&quot;');
       var processed = '';
       var findColors = new RegExp('\\[([0-9][0-9]?;?)*m', 'gm');
       var sequences = [0];
