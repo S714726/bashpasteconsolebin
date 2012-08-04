@@ -1,7 +1,24 @@
 extends layout
 
+block script
+  script(src='jquery-1.7.2.min.js')
+  script
+    $('document').ready(function() {
+      $('#background').keyup(function() {
+        $('#box').css('background-color', $('#background').val());
+      });
+      $('#foreground').keyup(function() {
+        $('#box').css('color', $('#foreground').val());
+      });
+    });
+
 block content
   h3 log number #{message}
+  form
+    | Foreground color:
+    input(type='text', id='foreground', value='000', maxlength='3')
+    | Background color:
+    input(type='text', id='background', value='FFF', maxlength='3')
   div#box
     pre
       !{content}

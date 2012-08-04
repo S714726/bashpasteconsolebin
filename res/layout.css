@@ -22,6 +22,15 @@ input {
     margin: 10px 0px 0px 20px;
 }
 
+#foreground {
+    width: 30pt;
+    margin-right: 40px
+}
+
+#background {
+    width: 30pt;
+}
+
 ol {
     margin: 5px 0 0 0;
 }
